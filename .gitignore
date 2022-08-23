@@ -132,3 +132,4 @@ dist
 # coda
 .coda.json
 .coda-credentials.json
+.coda-pack.json

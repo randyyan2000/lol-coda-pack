@@ -4,7 +4,7 @@
   "description": "Coda pack for retrieving static League of Legends information from Riot Games's Data Dragon API",
   "main": "pack.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "ts-mocha -p ./tsconfig.json test/**/test*.ts",
     "postinstall": "npx patch-package"
   },
   "author": "Randy Yan",
@@ -31,6 +31,7 @@
     "json-schema": "^0.4.0",
     "mocha": "^10.0.0",
     "sinon": "^14.0.0",
+    "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^4.7.4"
   }
