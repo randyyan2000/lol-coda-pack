@@ -1,7 +1,7 @@
 {
-  "name": "lol-datadragon",
+  "name": "lol-coda-pack",
   "version": "1.0.0",
-  "description": "Coda pack for retrieving static League of Legends information from Riot Games's Data Dragon API",
+  "description": "Coda pack for retrieving League of Legends data from Riot Games APIs",
   "main": "pack.ts",
   "scripts": {
     "test": "ts-mocha -p ./tsconfig.json test/**/test*.ts",
@@ -10,7 +10,8 @@
   "author": "Randy Yan",
   "license": "ISC",
   "dependencies": {
-    "@codahq/packs-sdk": "^1.0.5"
+    "@codahq/packs-sdk": "^1.0.5",
+    "immutable": "^4.1.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.3",

@@ -1,8 +1,8 @@
 import { executeSyncFormulaFromPackDef } from "@codahq/packs-sdk/dist/development";
 import { pack } from "../pack";
 
-describe("Champion sync integration test", () => {
-  it("executes the sync formuxla", async () => {
+describe("Champions sync integration test", () => {
+  it("executes the sync formula", async () => {
     const result = await executeSyncFormulaFromPackDef(
       pack,
       "Champions",
@@ -14,6 +14,5 @@ describe("Champion sync integration test", () => {
         manifestPath: require.resolve("../pack"),
       }
     );
-    console.log(result.length);
   });
 });
