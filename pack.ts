@@ -1,9 +1,12 @@
 import * as coda from "@codahq/packs-sdk";
 import * as schemas from "./schemas";
 import * as helpers from "./helpers";
+import { Champion } from "./types";
 
 // This line creates your new Pack.
 export const pack = coda.newPack();
+
+pack.setVersion("4.0");
 
 pack.setSystemAuthentication({
   type: coda.AuthenticationType.CustomHeaderToken,
@@ -33,13 +36,10 @@ pack.addFormula({
   ],
   resultType: coda.ValueType.Object,
   schema: schemas.SummonerSchema,
-  execute: async function (
-    [name, region]: [String, String],
-    context: coda.ExecutionContext
-  ) {
+  execute: async function ([name, region]: [string, string], context: coda.ExecutionContext) {
     let summonerResponse = await context.fetcher.fetch({
       method: "GET",
-      url: `${helpers.riotApiUrl(region)}/summoner/v4/summoners/by-name/${name}`, // prettier-ignore
+      url: `${helpers.riotApiUrl(region)}/summoner/v4/summoners/by-name/${name}`,
     });
     let summoner = summonerResponse.body;
     return {
@@ -51,6 +51,21 @@ pack.addFormula({
       puuid: summoner.puuid,
       level: summoner.summonerLevel,
     };
+  },
+});
+
+pack.addSyncTable({
+  name: "Champions",
+  schema: schemas.ChampionSchema,
+  identityName: "Champion",
+  formula: {
+    name: "SyncChampions",
+    description: "Sync champion data.",
+    parameters: [],
+    execute: async function ([], context) {
+      let result = await helpers.getAllChampions(context.fetcher);
+      return { result };
+    },
   },
 });
 
@@ -69,14 +84,16 @@ pack.addSyncTable({
       }),
       RegionParameter,
     ],
-    execute: async function (
-      [id, region]: [String, String],
-      context: coda.ExecutionContext
-    ) {
+    execute: async function ([id, region]: [string, string], context: coda.ExecutionContext) {
       let championMasteryResponse = await context.fetcher.fetch({
         method: "GET",
-        url: `${helpers.riotApiUrl(region)}/champion-mastery/v4/champion-masteries/by-summoner/${id}`, // prettier-ignore
+        url: `${helpers.riotApiUrl(region)}/champion-mastery/v4/champion-masteries/by-summoner/${id}`,
       });
+      let allChampionsById: Map<number, Champion> = new Map();
+      (await helpers.getAllChampions(context.fetcher)).forEach((champion: Champion) => {
+        allChampionsById.set(champion.key, champion);
+      });
+
       let result = championMasteryResponse.body.map((mastery) => ({
         championId: mastery.championId,
         championLevel: mastery.championLevel,
@@ -87,45 +104,8 @@ pack.addSyncTable({
         chestGranted: mastery.chestGranted,
         tokensEarned: mastery.tokensEarned,
         summonerId: mastery.summonerId,
+        champion: allChampionsById.get(mastery.championId),
       }));
-      return { result };
-    },
-  },
-});
-
-pack.addSyncTable({
-  name: "Champions",
-  schema: schemas.ChampionSchema,
-  identityName: "Champion",
-  formula: {
-    name: "SyncChampions",
-    description: "Sync champion data.",
-    parameters: [],
-    execute: async function ([], context) {
-      let versionResponse: coda.FetchResponse<String[]> =
-        await context.fetcher.fetch({
-          method: "GET",
-          url: "https://ddragon.leagueoflegends.com/api/versions.json",
-          disableAuthentication: true,
-        });
-      let latestVersion = versionResponse.body[0];
-      let championsResponse = await context.fetcher.fetch({
-        method: "GET",
-        url: `https://ddragon.leagueoflegends.com/cdn/${latestVersion}/data/en_US/champion.json`,
-        disableAuthentication: true,
-      });
-      let result = Object.entries(championsResponse.body.data).map(
-        ([_, info]: [any, any]) => ({
-          id: info.id,
-          key: Number(info.key),
-          name: info.name,
-          title: info.title,
-          blurb: info.blurb,
-          image: `http://ddragon.leagueoflegends.com/cdn/${latestVersion}/img/champion/${info.id}.png`,
-          tags: info.tags,
-          partype: info.partype,
-        })
-      );
       return { result };
     },
   },
