@@ -6,7 +6,7 @@ import { Champion } from "./types";
 // This line creates your new Pack.
 export const pack = coda.newPack();
 
-pack.setVersion("4.0");
+pack.setVersion("5.0");
 
 pack.setSystemAuthentication({
   type: coda.AuthenticationType.CustomHeaderToken,
@@ -23,34 +23,20 @@ const RegionParameter = coda.makeParameter({
   suggestedValue: "NA",
 });
 
+const SummonerNameParameter = coda.makeParameter({
+  type: coda.ParameterType.String,
+  name: "Summoner Name",
+  description: "League of Legends summoner name",
+});
+
 pack.addFormula({
   name: "Summoner",
   description: "Get account information about a League of Legends summoner.",
-  parameters: [
-    coda.makeParameter({
-      type: coda.ParameterType.String,
-      name: "Summoner Name",
-      description: "League of Legends summoner name",
-    }),
-    RegionParameter,
-  ],
+  parameters: [SummonerNameParameter, RegionParameter],
   resultType: coda.ValueType.Object,
   schema: schemas.SummonerSchema,
   execute: async function ([name, region]: [string, string], context: coda.ExecutionContext) {
-    let summonerResponse = await context.fetcher.fetch({
-      method: "GET",
-      url: `${helpers.riotApiUrl(region)}/summoner/v4/summoners/by-name/${name}`,
-    });
-    let summoner = summonerResponse.body;
-    return {
-      accountId: summoner.accountId,
-      profileIconId: summoner.profileIconId,
-      revisionDate: summoner.revisionDate / 1000,
-      name: summoner.name,
-      summonerId: summoner.id,
-      puuid: summoner.puuid,
-      level: summoner.summonerLevel,
-    };
+    return helpers.getSummonerByName(name, region, context.fetcher);
   },
 });
 
@@ -76,18 +62,12 @@ pack.addSyncTable({
   formula: {
     name: "SyncChampionMasteries",
     description: "Sync champion data.",
-    parameters: [
-      coda.makeParameter({
-        type: coda.ParameterType.String,
-        name: "Summoner Id",
-        description: "Id of summoner to retrieve data for.",
-      }),
-      RegionParameter,
-    ],
-    execute: async function ([id, region]: [string, string], context: coda.ExecutionContext) {
+    parameters: [SummonerNameParameter, RegionParameter],
+    execute: async function ([name, region]: [string, string], context: coda.ExecutionContext) {
+      let summonerId: string = await helpers.getSummonerIdByName(name, region, context.fetcher);
       let championMasteryResponse = await context.fetcher.fetch({
         method: "GET",
-        url: `${helpers.riotApiUrl(region)}/champion-mastery/v4/champion-masteries/by-summoner/${id}`,
+        url: `${helpers.riotApiUrl(region)}/champion-mastery/v4/champion-masteries/by-summoner/${summonerId}`,
       });
       let allChampionsById: Map<number, Champion> = new Map();
       (await helpers.getAllChampions(context.fetcher)).forEach((champion: Champion) => {

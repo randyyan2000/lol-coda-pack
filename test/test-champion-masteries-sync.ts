@@ -7,7 +7,7 @@ describe("ChampionMasteries sync integration test", () => {
     const result = await executeSyncFormulaFromPackDef(
       pack,
       "ChampionMasteries",
-      ["FETdnkVAMBPU__mJhZif8F4Di0ZUc37UbeRJU2qQ2NeF9QY", "NA"],
+      ["honkerino", "NA"],
       undefined,
       undefined,
       {

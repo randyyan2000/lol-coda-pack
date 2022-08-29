@@ -8,3 +8,13 @@ export type Champion = {
   tags: string[];
   partype: string;
 };
+
+export type Summoner = {
+  accountId: string;
+  profileIconId: number;
+  revisionDate: number;
+  name: string;
+  summonerId: string;
+  puuid: string;
+  level: number;
+};

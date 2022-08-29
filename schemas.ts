@@ -53,7 +53,7 @@ export const ChampionMasterySchema = coda.makeObjectSchema({
     summonerId: { type: coda.ValueType.String },
     champion: { ...ChampionSchema, required: true },
   },
-  featuredProperties: ["championId", "championLevel", "chestGranted"],
+  featuredProperties: ["champion", "championLevel", "chestGranted"],
   idProperty: "championId",
   displayProperty: "championId",
 });

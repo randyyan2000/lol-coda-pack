@@ -1,6 +1,6 @@
 import * as coda from "@codahq/packs-sdk";
 import Immutable = require("immutable");
-import { Champion } from "./types";
+import { Champion, Summoner } from "./types";
 
 const regionMap: Immutable.Map<string, string> = Immutable.Map({
   BR: "br1",
@@ -49,4 +49,25 @@ export async function getAllChampions(fetcher: coda.Fetcher): Promise<Champion[]
     tags: info.tags,
     partype: info.partype,
   }));
+}
+
+export async function getSummonerByName(name: string, region: string, fetcher: coda.Fetcher): Promise<Summoner> {
+  let summonerResponse = await fetcher.fetch({
+    method: "GET",
+    url: `${riotApiUrl(region)}/summoner/v4/summoners/by-name/${name}`,
+  });
+  let summoner = summonerResponse.body;
+  return {
+    accountId: summoner.accountId,
+    profileIconId: summoner.profileIconId,
+    revisionDate: summoner.revisionDate / 1000,
+    name: summoner.name,
+    summonerId: summoner.id,
+    puuid: summoner.puuid,
+    level: summoner.summonerLevel,
+  };
+}
+
+export async function getSummonerIdByName(name: string, region: string, fetcher: coda.Fetcher): Promise<string> {
+  return (await getSummonerByName(name, region, fetcher)).summonerId;
 }
