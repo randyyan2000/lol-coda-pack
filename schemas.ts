@@ -47,7 +47,7 @@ export const ChampionMasterySchema = coda.makeObjectSchema({
       type: coda.ValueType.Boolean,
     },
     tokensEarned: {
-      description: "The token earned for this champion at the current championLevel",
+      description: "The number of tokens earned for this champion at the current championLevel.",
       type: coda.ValueType.Number,
     },
     summonerId: { type: coda.ValueType.String },

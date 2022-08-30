@@ -19,19 +19,19 @@ pack.addNetworkDomain("leagueoflegends.com");
 const RegionParameter = coda.makeParameter({
   type: coda.ParameterType.String,
   name: "Region",
-  description: "Region summoner is associated with.",
+  description: "The region the summoner is associated with.",
   suggestedValue: "NA",
 });
 
 const SummonerNameParameter = coda.makeParameter({
   type: coda.ParameterType.String,
   name: "Summoner Name",
-  description: "League of Legends summoner name",
+  description: "The summoner name of the League of Legends account.",
 });
 
 pack.addFormula({
   name: "Summoner",
-  description: "Get account information about a League of Legends summoner.",
+  description: "Gets account information about a League of Legends summoner.",
   parameters: [SummonerNameParameter, RegionParameter],
   resultType: coda.ValueType.Object,
   schema: schemas.SummonerSchema,
@@ -46,7 +46,7 @@ pack.addSyncTable({
   identityName: "Champion",
   formula: {
     name: "SyncChampions",
-    description: "Sync champion data.",
+    description: "Sync all champion data.",
     parameters: [],
     execute: async function ([], context) {
       let result = await helpers.getAllChampions(context.fetcher);
@@ -61,7 +61,7 @@ pack.addSyncTable({
   identityName: "ChampionMasteries",
   formula: {
     name: "SyncChampionMasteries",
-    description: "Sync champion data.",
+    description: "Sync champion mastery data for a summoner.",
     parameters: [SummonerNameParameter, RegionParameter],
     execute: async function ([name, region]: [string, string], context: coda.ExecutionContext) {
       let summonerId: string = await helpers.getSummonerIdByName(name, region, context.fetcher);
