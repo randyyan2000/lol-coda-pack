@@ -9,5 +9,6 @@ describe("Summoner integration test", () => {
       manifestPath: require.resolve("../pack"),
     });
     assert(result.SummonerId);
+    assert(result.Puuid);
   });
 });

@@ -1,12 +1,11 @@
 import * as coda from "@codahq/packs-sdk";
 import * as schemas from "./schemas";
 import * as helpers from "./helpers";
-import { Champion } from "./types";
+import { Champion, Match } from "./types";
 
-// This line creates your new Pack.
 export const pack = coda.newPack();
 
-pack.setVersion("5.0");
+pack.setVersion("6.0");
 
 pack.setSystemAuthentication({
   type: coda.AuthenticationType.CustomHeaderToken,
@@ -87,6 +86,67 @@ pack.addSyncTable({
         champion: allChampionsById.get(mastery.championId),
       }));
       return { result };
+    },
+  },
+});
+
+pack.addSyncTable({
+  name: "Matches",
+  schema: schemas.MatchSchema,
+  identityName: "Matches",
+  formula: {
+    name: "SyncMatches",
+    description: "Sync match history data for a summoner.",
+    parameters: [
+      SummonerNameParameter,
+      RegionParameter,
+      coda.makeParameter({
+        type: coda.ParameterType.Number,
+        name: "Count",
+        description: "Number of matches to return. Valid values: 0 to 100. Defaults to 20.",
+        optional: true,
+      }),
+      coda.makeParameter({
+        type: coda.ParameterType.Number,
+        name: "Start",
+        description: "Start index. Defaults to 0.",
+        optional: true,
+      }),
+      coda.makeParameter({
+        type: coda.ParameterType.Number,
+        name: "Start Time",
+        description:
+          "Epoch timestamp in seconds. Matches played before June 16th, 2021 won't be included if this is set.",
+        optional: true,
+      }),
+      coda.makeParameter({
+        type: coda.ParameterType.Number,
+        name: "End Time",
+        description: "Epoch timestamp in seconds.",
+        optional: true,
+      }),
+    ],
+    execute: async function (
+      [name, region, count, start, startTime, endTime]: [string, string, number, number, number, number],
+      context: coda.ExecutionContext
+    ) {
+      const puuid: string = await helpers.getPuuidByName(name, region, context.fetcher);
+      const matchIds: string[] = await helpers.getMatchIdsByPuuid(
+        puuid,
+        region,
+        context.fetcher,
+        startTime,
+        endTime,
+        start,
+        count
+      );
+      const matches: Match[] = await Promise.all(
+        matchIds.map(
+          (matchId: string): Promise<Match> => helpers.getMatchByMatchId(matchId, region, context.fetcher, puuid)
+        )
+      );
+
+      return { result: matches };
     },
   },
 });
